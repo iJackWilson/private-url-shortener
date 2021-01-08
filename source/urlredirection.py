@@ -18,4 +18,3 @@ def handler(event, context):
         return { "Redirect": redirect_url }
     else:
         return { "Error": "Unable to load redirect url for object s3://" + S3_BUCKET + "/" + short_url }
-
