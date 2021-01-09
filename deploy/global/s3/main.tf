@@ -36,3 +36,14 @@ resource "aws_s3_bucket" "b" {
 EOF
   }
 }
+
+resource "aws_s3_bucket_object" "object" {
+
+  bucket = "private-url-shortener.jackwilson.uk"
+
+  key    = "index.html"
+
+  acl    = "public-read"
+
+  source = "./index.html"
+}
