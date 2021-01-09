@@ -15,32 +15,32 @@ module "cdn" {
   wait_for_deployment = false
 
   create_origin_access_identity = true
-  origin_access_identities = {
-    s3_bucket_one = "My awesome CloudFront can access"
-  }
+    origin_access_identities = {
+      s3_bucket_one = "My awesome CloudFront can access"
+    }
 
 //  logging_config = {
 //   bucket = "logs-my-cdn.s3.amazonaws.com"
 //  }
 
-  origin = {
-    something = {
-      domain_name = "something.example.com"
-      custom_origin_config = {
-        http_port              = 80
-        https_port             = 443
-        origin_protocol_policy = "match-viewer"
-        origin_ssl_protocols   = ["TLSv1"]
+    origin = {
+      something = {
+        domain_name = "something.example.com"
+        custom_origin_config = {
+          http_port              = 80
+          https_port             = 443
+          origin_protocol_policy = "match-viewer"
+          origin_ssl_protocols   = ["TLSv1.2"]
+        }
       }
-    }
 
-    s3_one = {
-      domain_name = "my-s3-bycket.s3.amazonaws.com"
-      s3_origin_config = {
-        origin_access_identity = "s3_bucket_one"
+      s3_one = {
+        domain_name = "my-s3-bycket.s3.amazonaws.com"
+        s3_origin_config = {
+          origin_access_identity = "s3_bucket_one"
+        }
       }
     }
-  }
 
   cache_behavior = {
     default = {
