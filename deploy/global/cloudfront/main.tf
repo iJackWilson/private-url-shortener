@@ -1,117 +1,67 @@
-resource "aws_s3_bucket" "b" {
-  bucket = "mybucket"
-  acl    = "private"
-
-  tags = {
-    Name = "My bucket"
-  }
+provider "aws" {
+  region = "eu-central-1"
 }
 
-locals {
-  s3_origin_id = "myS3Origin"
-}
+module "cdn" {
+  source = "terraform-aws-modules/cloudfront/aws"
 
-resource "aws_cloudfront_distribution" "s3_distribution" {
-  origin {
-    domain_name = aws_s3_bucket.b.bucket_regional_domain_name
-    origin_id   = local.s3_origin_id
+  //aliases = ["cdn.example.com"]
 
-    s3_origin_config {
-      origin_access_identity = "origin-access-identity/cloudfront/ABCDEFG1234567"
-    }
-  }
-
+  comment             = "CloudFront by Terraform"
   enabled             = true
   is_ipv6_enabled     = true
-  comment             = "Some comment"
-  default_root_object = "index.html"
+  price_class         = "PriceClass_All"
+  retain_on_delete    = false
+  wait_for_deployment = false
 
-  logging_config {
-    include_cookies = false
-    bucket          = "mylogs.s3.amazonaws.com"
-    prefix          = "myprefix"
+  create_origin_access_identity = true
+  origin_access_identities = {
+    s3_bucket_one = "My awesome CloudFront can access"
   }
 
-  aliases = ["mysite.example.com", "yoursite.example.com"]
+//  logging_config = {
+//   bucket = "logs-my-cdn.s3.amazonaws.com"
+//  }
 
-  default_cache_behavior {
-    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = local.s3_origin_id
-
-    forwarded_values {
-      query_string = false
-
-      cookies {
-        forward = "none"
+  origin = {
+    something = {
+      domain_name = "something.example.com"
+      custom_origin_config = {
+        http_port              = 80
+        https_port             = 443
+        origin_protocol_policy = "match-viewer"
+        origin_ssl_protocols   = ["TLSv1"]
       }
     }
 
-    viewer_protocol_policy = "allow-all"
-    min_ttl                = 0
-    default_ttl            = 3600
-    max_ttl                = 86400
-  }
-
-  # Cache behavior with precedence 0
-  ordered_cache_behavior {
-    path_pattern     = "/content/immutable/*"
-    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
-    cached_methods   = ["GET", "HEAD", "OPTIONS"]
-    target_origin_id = local.s3_origin_id
-
-    forwarded_values {
-      query_string = false
-      headers      = ["Origin"]
-
-      cookies {
-        forward = "none"
+    s3_one = {
+      domain_name = "my-s3-bycket.s3.amazonaws.com"
+      s3_origin_config = {
+        origin_access_identity = "s3_bucket_one"
       }
     }
-
-    min_ttl                = 0
-    default_ttl            = 86400
-    max_ttl                = 31536000
-    compress               = true
-    viewer_protocol_policy = "redirect-to-https"
   }
 
-  # Cache behavior with precedence 1
-  ordered_cache_behavior {
-    path_pattern     = "/content/*"
-    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = local.s3_origin_id
+  cache_behavior = {
+    default = {
+      target_origin_id       = "something"
+      viewer_protocol_policy = "allow-all"
 
-    forwarded_values {
-      query_string = false
-
-      cookies {
-        forward = "none"
-      }
+      allowed_methods = ["GET", "HEAD", "OPTIONS"]
+      cached_methods  = ["GET", "HEAD"]
+      compress        = true
+      query_string    = true
     }
 
-    min_ttl                = 0
-    default_ttl            = 3600
-    max_ttl                = 86400
-    compress               = true
-    viewer_protocol_policy = "redirect-to-https"
-  }
+    s3 = {
+      path_pattern           = "/static/*"
+      target_origin_id       = "s3_one"
+      viewer_protocol_policy = "redirect-to-https"
 
-  price_class = "PriceClass_200"
-
-  restrictions {
-    geo_restriction {
-      restriction_type = "whitelist"
-      locations        = ["US", "CA", "GB", "DE"]
+      allowed_methods = ["GET", "HEAD", "OPTIONS"]
+      cached_methods  = ["GET", "HEAD"]
+      compress        = true
+      query_string    = true
     }
-  }
-
-  tags = {
-    Environment = "production"
-  }
-
-  viewer_certificate {
-    cloudfront_default_certificate = true
   }
 }
