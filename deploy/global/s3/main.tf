@@ -45,5 +45,5 @@ resource "aws_s3_bucket_object" "object" {
 
   acl    = "public-read"
 
-  source = "./index.html"
+  source = "../../../source/index.html"
 }
