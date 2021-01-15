@@ -123,7 +123,7 @@ resource "aws_cloudfront_distribution" "CloudFrontDistribution" {
     enabled = true
     viewer_certificate {
         acm_certificate_arn = "arn:aws:acm:us-east-1:271537303292:certificate/0b5779b0-125d-4cec-98e9-946fcfc687b6"
-        minimum_protocol_rersion = "TLSv1.2_2019"
+        minimum_protocol_version = "TLSv1.2_2019"
         ssl_support_method = "sni-only"
     }
     restrictions {
@@ -164,17 +164,6 @@ resource "aws_s3_bucket" "b" {
   website {
     index_document = "index.html"
     error_document = "error.html"
-
-    routing_rules = <<EOF
-[{
-    "Condition": {
-        "KeyPrefixEquals": "docs/"
-    },
-    "Redirect": {
-        "ReplaceKeyPrefixWith": "documents/"
-    }
-}]
-EOF
   }
 }
 
