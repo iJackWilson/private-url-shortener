@@ -1,5 +1,13 @@
 # https://www.terraform.io/downloads.html
 
+terraform {
+  backend "s3" {
+    bucket = "tfstate.jackwilson.uk"
+    key    = "urlshortener.tfstate"
+    region = "eu-central-1"
+  }
+}
+
 provider "aws" {
     region = "eu-central-1"
 }
