@@ -1,6 +1,6 @@
 name: Terraform Apply
 
-on: [push]
+//on: [push]
 
 jobs:
   terraform_apply:
