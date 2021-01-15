@@ -135,20 +135,15 @@ resource "aws_s3_bucket" "S3Bucket" {
     bucket = "urlshortener-s3bucketforurls-typ7eb6pxavv"
 }
 
-resource "aws_lambda_function" "LambdaFunction" {
+resource "aws_lambda_function" "redirect" {
     description = ""
-    environment {
-        variables = {
-            S3_BUCKET = "urlshortener-s3bucketforurls-typ7eb6pxavv"
-        }
-    }
+    
+    filename = "../source/redirect.py.zip"
+
     function_name = "URLShortener-LambdaShortener-DYGM7AIWFOPQ"
     handler = "index.handler"
-    s3_bucket = "awslambda-eu-cent-1-tasks"
-    s3_key = "/snapshots/271537303292/URLShortener-LambdaShortener-DYGM7AIWFOPQ-cea99048-935f-4258-b426-3b24f6a63515"
-    s3_object_version = "zZeKysAIZwVbHCqsiv5g9GMi6Vetc2Fn"
     memory_size = 384
-    role = "arn:aws:iam::271537303292:role/URLShortener-LambdaExecRole-P65E5YDU494S"
+    role = "arn:aws:iam::271537303292:role/URLShortener-LambdaExecRole-1QC699RU3EOPA"
     runtime = "python3.6"
     timeout = 10
     tracing_config {
@@ -156,20 +151,15 @@ resource "aws_lambda_function" "LambdaFunction" {
     }
 }
 
-resource "aws_lambda_function" "LambdaFunction2" {
+resource "aws_lambda_function" "shorten" {
     description = ""
-    environment {
-        variables = {
-            S3_BUCKET = "urlshortener-s3bucketforurls-typ7eb6pxavv"
-        }
-    }
+
+    filename = "../source/shorten.py.zip"
+    
     function_name = "URLShortener-LambdaRedirector-8E96CUR90EC"
     handler = "index.handler"
-    s3_bucket = "awslambda-eu-cent-1-tasks"
-    s3_key = "/snapshots/271537303292/URLShortener-LambdaRedirector-8E96CUR90EC-24713968-e5ac-432b-aa7d-d1e9558feb52"
-    s3_object_version = "rDD8QxwaEjv8a.2WBi2uga_SHlvVsJew"
     memory_size = 384
-    role = "arn:aws:iam::271537303292:role/URLShortener-LambdaExecRole-P65E5YDU494S"
+    role = "arn:aws:iam::271537303292:role/URLShortener-LambdaExecRole-1QC699RU3EOPA"
     runtime = "python3.6"
     timeout = 5
     tracing_config {
