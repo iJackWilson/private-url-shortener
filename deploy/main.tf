@@ -12,6 +12,10 @@ provider "aws" {
     region = "eu-central-1"
 }
 
+##############################
+# CloudFront Distribution
+##############################
+
 resource "aws_cloudfront_distribution" "CloudFrontDistribution" {
 //    aliases = [
 //      "j-w.io",
@@ -119,7 +123,7 @@ resource "aws_cloudfront_distribution" "CloudFrontDistribution" {
     enabled = true
     viewer_certificate {
         acm_certificate_arn = "arn:aws:acm:us-east-1:271537303292:certificate/0b5779b0-125d-4cec-98e9-946fcfc687b6"
-        minimum_protocol_version = "TLSv1.2_2019"
+        minimum_protocol_rersion = "TLSv1.2_2019"
         ssl_support_method = "sni-only"
     }
     restrictions {
@@ -131,9 +135,52 @@ resource "aws_cloudfront_distribution" "CloudFrontDistribution" {
     is_ipv6_enabled = true
 }
 
-resource "aws_s3_bucket" "S3Bucket" {
-    bucket = "urlshortener-s3bucketforurls-typ7eb6pxavv"
+##############################
+# S3 Bucket
+##############################
+
+resource "aws_s3_bucket" "b" {
+  bucket = "private-url-shortener.jackwilson.uk"
+  acl    = "public-read"
+
+  lifecycle_rule {
+    id		= "DisposeShortUrls"
+    enabled	= true
+    prefix 	= "u/"
+
+    expiration {
+      days = 365
+    }
+  }
+
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm     = "AES256"
+      }
+    }
+ }
+
+  website {
+    index_document = "index.html"
+    error_document = "error.html"
+
+    routing_rules = <<EOF
+[{
+    "Condition": {
+        "KeyPrefixEquals": "docs/"
+    },
+    "Redirect": {
+        "ReplaceKeyPrefixWith": "documents/"
+    }
+}]
+EOF
+  }
 }
+
+##############################
+# Redirect Lambda
+##############################
 
 resource "aws_lambda_function" "redirect" {
     description = ""
@@ -151,6 +198,10 @@ resource "aws_lambda_function" "redirect" {
     }
 }
 
+##############################
+# Shorten Lambda
+##############################
+
 resource "aws_lambda_function" "shorten" {
     description = ""
 
@@ -166,6 +217,10 @@ resource "aws_lambda_function" "shorten" {
         mode = "PassThrough"
     }
 }
+
+##############################
+# API Gateway
+##############################
 
 resource "aws_api_gateway_rest_api" "ApiGatewayRestApi" {
     name = "URLShortener-LambdaShortener-DYGM7AIWFOPQ"
